@@ -7,11 +7,14 @@ import random
 from models import setup_db, Question, Category
 
 QUESTIONS_PER_PAGE = 10
+CURRENT_CATEGORY = None
 
 def create_app(test_config=None):
   # create and configure the app
   app = Flask(__name__)
   setup_db(app)
+
+  CURRENT_CATEGORY = Category.query.first().type
   
   '''
   @TODO: Set up CORS. Allow '*' for origins. Delete the sample route after completing the TODOs
@@ -33,8 +36,8 @@ def create_app(test_config=None):
   '''
   def paginate_questions(request, questions):
     page = request.args.get('page', 1, type=int)
-    start =  (page - 1) * 10
-    end = start + 10
+    start =  (page - 1) * QUESTIONS_PER_PAGE
+    end = start + QUESTIONS_PER_PAGE
 
     questions = [question.format() for question in questions]
     current_questions = questions[start:end]
@@ -79,7 +82,7 @@ def create_app(test_config=None):
       "questions": paginate_questions(request, questions),
       "total_questions": len(questions),
       "categories": {category.id: category.type for category in categories},
-      "current_category": categories[0].type,
+      "current_category": CURRENT_CATEGORY,
       "success": True
     })
 
@@ -114,9 +117,7 @@ def create_app(test_config=None):
   TEST: When you submit a question on the "Add" tab, 
   the form will clear and the question will appear at the end of the last page
   of the questions list in the "List" tab.
-  '''
-
-    '''
+  
   @TODO: 
   Create a POST endpoint to get questions based on a search term. 
   It should return any questions for whom the search term 
@@ -126,7 +127,7 @@ def create_app(test_config=None):
   only question that include that string within their question. 
   Try using the word "title" to start. 
   '''
-  
+
   @app.route('/questions', methods=['POST'])
   @cross_origin()
   def add_question():
@@ -157,7 +158,7 @@ def create_app(test_config=None):
         return jsonify({
           "questions": paginate_questions(request, questions),
           "total_questions": len(Question.query.all()),
-          "current_category": categories[0].type,
+          "current_category": CURRENT_CATEGORY,
           "success": True
         })
 
@@ -172,6 +173,25 @@ def create_app(test_config=None):
   categories in the left column will cause only questions of that 
   category to be shown. 
   '''
+  @app.route('/categories/<int:category_id>/questions')
+  @cross_origin()
+  def get_questions_by_category(category_id):
+
+    current_category = Category.query.filter(Category.id == category_id).one_or_none()
+
+    if current_category is None:
+      abort(404)
+    
+    else:
+      questions = Question.query.filter(Question.category == category_id)
+
+      CURRENT_CATEGORY = current_category.type
+
+      return jsonify({
+        "questions": paginate_questions(request, questions),
+        "total_questions": len(Question.query.all()),
+        "current_category": CURRENT_CATEGORY
+      })
 
 
   '''
