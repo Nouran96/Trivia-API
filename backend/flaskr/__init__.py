@@ -216,23 +216,38 @@ def create_app(test_config=None):
 
     current_question = None
 
-    if len(previous_questions) == 0:
-      current_question = Question.query.order_by(func.random()).filter(Question.category == quiz_category.get('id')).first()
+    # If no category is specified
+    if quiz_category.get('id') == 0:
+      # If first question
+      if len(previous_questions) == 0:
+        current_question = Question.query.order_by(func.random()).first()
+
+      else:
+        random_questions = Question.query.order_by(func.random())
+
+        for question in random_questions:
+          if question.id in previous_questions:
+            continue
+          else:
+            current_question = question
 
     else:
-      random_questions = Question.query.order_by(func.random()).filter(Question.category == quiz_category.get('id'))
+      if len(previous_questions) == 0:
+        current_question = Question.query.order_by(func.random()).filter(Question.category == quiz_category.get('id')).first()
 
-      for question in random_questions:
-        if question.id in previous_questions:
-          continue
-        else:
-          current_question = question
+      else:
+        random_questions = Question.query.order_by(func.random()).filter(Question.category == quiz_category.get('id'))
+
+        for question in random_questions:
+          if question.id in previous_questions:
+            continue
+          else:
+            current_question = question
     
     return jsonify({
       "question": None if current_question is None else current_question.format(),
       "success": True
     })
-
 
   '''
   @TODO: 
