@@ -1,6 +1,7 @@
 import os
 from flask import Flask, request, abort, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.sql import func
 from flask_cors import CORS, cross_origin
 import random
 
@@ -205,6 +206,33 @@ def create_app(test_config=None):
   one question at a time is displayed, the user is allowed to answer
   and shown whether they were correct or not. 
   '''
+  @app.route('/quizzes', methods=['POST'])
+  @cross_origin()
+  def get_quiz_questions():
+    body = request.get_json()
+
+    previous_questions = body.get('previous_questions', None)
+    quiz_category = body.get('quiz_category', None)
+
+    current_question = None
+
+    if len(previous_questions) == 0:
+      current_question = Question.query.order_by(func.random()).filter(Question.category == quiz_category.get('id')).first()
+
+    else:
+      random_questions = Question.query.order_by(func.random()).filter(Question.category == quiz_category.get('id'))
+
+      for question in random_questions:
+        if question.id in previous_questions:
+          continue
+        else:
+          current_question = question
+    
+    return jsonify({
+      "question": None if current_question is None else current_question.format(),
+      "success": True
+    })
+
 
   '''
   @TODO: 
