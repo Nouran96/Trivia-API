@@ -26,6 +26,7 @@ class QuestionView extends Component {
       url: `/questions?page=${this.state.page}`, //TODO: update request URL
       type: "GET",
       success: (result) => {
+        console.log(result.categories)
         this.setState({
           questions: result.questions,
           totalQuestions: result.total_questions,
@@ -128,7 +129,7 @@ class QuestionView extends Component {
             {Object.keys(this.state.categories).map((id, ) => (
               <li key={id} onClick={() => {this.getByCategory(id)}}>
                 {this.state.categories[id]}
-                <img className="category" src={`${this.state.categories[id]}.svg`}/>
+                <img className="category" src={`${this.state.categories[id].toLowerCase()}.svg`}/>
               </li>
             ))}
           </ul>

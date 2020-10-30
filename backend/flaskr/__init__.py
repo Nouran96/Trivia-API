@@ -29,6 +29,19 @@ def create_app(test_config=None):
     return response
 
   '''
+  Paginate Questions
+  '''
+  def paginate_questions(request, questions):
+    page = request.args.get('page', 1, type=int)
+    start =  (page - 1) * 10
+    end = start + 10
+
+    questions = [question.format() for question in questions]
+    current_questions = questions[start:end]
+
+    return current_questions
+
+  '''
   @TODO: 
   Create an endpoint to handle GET requests 
   for all available categories.
@@ -48,13 +61,26 @@ def create_app(test_config=None):
   Create an endpoint to handle GET requests for questions, 
   including pagination (every 10 questions). 
   This endpoint should return a list of questions, 
-  number of total questions, current category, categories. 
+  number of total questions, current category, categories.
 
   TEST: At this point, when you start the application
   you should see questions and categories generated,
   ten questions per page and pagination at the bottom of the screen for three pages.
   Clicking on the page numbers should update the questions. 
   '''
+  @app.route('/questions')
+  @cross_origin()
+  def get_paginated_questions():
+
+    questions = Question.query.order_by(Question.id).all()
+    categories = Category.query.order_by(Category.id).all()
+
+    return jsonify({
+      "questions": paginate_questions(request, questions),
+      "total_questions": len(questions),
+      "categories": {category.id: category.type for category in categories},
+      "current_category": categories[0].type
+    })
 
   '''
   @TODO: 
