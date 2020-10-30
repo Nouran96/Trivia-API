@@ -113,33 +113,10 @@ def create_app(test_config=None):
 
   TEST: When you submit a question on the "Add" tab, 
   the form will clear and the question will appear at the end of the last page
-  of the questions list in the "List" tab.  
+  of the questions list in the "List" tab.
   '''
-  @app.route('/questions', methods=['POST'])
-  @cross_origin()
-  def add_question():
-    body = request.get_json()
 
-    question = body.get('question', None)
-    answer = body.get('answer', None)
-    difficulty = body.get('difficulty', None)
-    category = body.get('category', None)
-
-    try:
-      question = Question(question=question, answer=answer, difficulty=difficulty, category=category)
-
-      question.insert()
-
-      return jsonify({
-        "success": True,
-        "created": question.id
-      })
-
-    except:
-      abort(422)
-
-
-  '''
+    '''
   @TODO: 
   Create a POST endpoint to get questions based on a search term. 
   It should return any questions for whom the search term 
@@ -149,6 +126,43 @@ def create_app(test_config=None):
   only question that include that string within their question. 
   Try using the word "title" to start. 
   '''
+  
+  @app.route('/questions', methods=['POST'])
+  @cross_origin()
+  def add_question():
+    body = request.get_json()
+
+    search_term = body.get('searchTerm', None)
+
+    question = body.get('question', None)
+    answer = body.get('answer', None)
+    difficulty = body.get('difficulty', None)
+    category = body.get('category', None)
+
+    try:
+      if search_term is None:
+        question = Question(question=question, answer=answer, difficulty=difficulty, category=category)
+
+        question.insert()
+
+        return jsonify({
+          "success": True,
+          "created": question.id
+        })
+
+      else:
+        questions = Question.query.order_by(Question.id).filter(Question.question.ilike('%{}%'.format(search_term)))
+        categories = Category.query.all()
+
+        return jsonify({
+          "questions": paginate_questions(request, questions),
+          "total_questions": len(Question.query.all()),
+          "current_category": categories[0].type,
+          "success": True
+        })
+
+    except:
+      abort(422)
 
   '''
   @TODO: 
