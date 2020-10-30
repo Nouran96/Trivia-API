@@ -53,7 +53,7 @@ def create_app(test_config=None):
 
     return jsonify({
       'success': True,
-      'categories': [category.format() for category in categories]
+      'categories': {category.id: category.type for category in categories}
     })
 
   '''
@@ -115,6 +115,29 @@ def create_app(test_config=None):
   the form will clear and the question will appear at the end of the last page
   of the questions list in the "List" tab.  
   '''
+  @app.route('/questions', methods=['POST'])
+  @cross_origin()
+  def add_question():
+    body = request.get_json()
+
+    question = body.get('question', None)
+    answer = body.get('answer', None)
+    difficulty = body.get('difficulty', None)
+    category = body.get('category', None)
+
+    try:
+      question = Question(question=question, answer=answer, difficulty=difficulty, category=category)
+
+      question.insert()
+
+      return jsonify({
+        "success": True,
+        "created": question.id
+      })
+
+    except:
+      abort(422)
+
 
   '''
   @TODO: 
@@ -160,6 +183,14 @@ def create_app(test_config=None):
       "error": 404,
       "success": False,
       "message": "Resource Not Found"
+    }), 404
+
+  @app.errorhandler(422)
+  def not_found():
+    return jsonify({
+      "error": 422,
+      "success": False,
+      "message": "Unprocessable Request"
     }), 404
   
   return app
