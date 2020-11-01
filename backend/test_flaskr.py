@@ -40,12 +40,6 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertTrue(len(data['categories']))
 
-    def test_get_categories_with_post(self):
-        res = self.client().post('/categories')
-        data = json.loads(res.data)
-
-        self.assertEqual(res.status_code, 400)
-
     def test_get_paginated_questions(self):
         res = self.client().get('/questions')
         data = json.loads(res.data)
@@ -60,6 +54,37 @@ class TriviaTestCase(unittest.TestCase):
 
         self.assertEqual(res.status_code, 404)
         self.assertEqual(data["success"], False)
+
+    def test_delete_question(self):
+        question = Question.query.first()
+
+        if question != None:
+            res = self.client().delete("/questions/{}".format(question.id))
+            data = json.loads(res.data)
+
+            self.assertEqual(res.status_code, 200)
+            self.assertEqual(data["success"], True)
+
+    def test_add_question(self):
+        res = self.client().post('/questions', json={'question':"Question from Test", 'answer':"Answer From Test", 'difficulty':1, 'rating':1})
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(data["success"], True)
+
+    def test_get_questions_by_category(self):
+        res = self.client().get('/categories/1/questions')
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(len(data['questions']))
+
+    def test_get_questions_by_category_with_non_existent_category(self):
+        res = self.client().get('/categories/10/questions')
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 404)
+        self.assertEqual(data['success'], False)
 
 
 # Make the tests conveniently executable

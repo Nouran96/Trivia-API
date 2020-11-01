@@ -145,10 +145,9 @@ def create_app(test_config=None):
     difficulty = body.get('difficulty', None)
     category = body.get('category', None)
 
-    try:
-      if search_term is None:
+    if search_term is None:
+      try:
         question = Question(question=question, answer=answer, difficulty=difficulty, category=category)
-
         question.insert()
 
         return jsonify({
@@ -156,19 +155,19 @@ def create_app(test_config=None):
           "created": question.id
         })
 
-      else:
-        questions = Question.query.order_by(Question.id).filter(Question.question.ilike('%{}%'.format(search_term)))
-        categories = Category.query.all()
+      except:
+        abort(422)
 
-        return jsonify({
-          "questions": paginate_questions(request, questions),
-          "total_questions": len(Question.query.all()),
-          "current_category": CURRENT_CATEGORY,
-          "success": True
-        })
+    else:
+      questions = Question.query.order_by(Question.id).filter(Question.question.ilike('%{}%'.format(search_term)))
+      categories = Category.query.all()
 
-    except:
-      abort(422)
+      return jsonify({
+        "questions": paginate_questions(request, questions),
+        "total_questions": len(Question.query.all()),
+        "current_category": CURRENT_CATEGORY,
+        "success": True
+      })
 
   '''
   @TODO: 
