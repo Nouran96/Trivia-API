@@ -70,11 +70,11 @@ One note before you delve into your tasks: for each endpoint you are expected to
 
 ## EndPoints
 
-GET '/categories'
-GET '/questions?page={page_num}'
-GET '/categories/{category_id}/questions'
-POST '/questions'
-POST '/quizzes'
+GET '/categories' <br>
+GET '/questions?page={page_num}' <br>
+GET '/categories/{category_id}/questions' <br>
+POST '/questions' <br>
+POST '/quizzes' <br>
 DELETE '/questions/{question_id}'
 
 #### GET '/categories'
