@@ -144,7 +144,7 @@ def create_app(test_config=None):
     answer = body.get('answer', None)
     difficulty = body.get('difficulty', None)
     category = body.get('category', None)
-
+    
     if search_term is None:
       try:
         question = Question(question=question, answer=answer, difficulty=difficulty, category=category)
