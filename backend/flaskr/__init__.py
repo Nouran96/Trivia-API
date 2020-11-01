@@ -78,9 +78,13 @@ def create_app(test_config=None):
 
     questions = Question.query.order_by(Question.id).all()
     categories = Category.query.order_by(Category.id).all()
+    current_questions = paginate_questions(request, questions)
+
+    if len(current_questions) == 0:
+      abort(404, 'not found')
 
     return jsonify({
-      "questions": paginate_questions(request, questions),
+      "questions": current_questions,
       "total_questions": len(questions),
       "categories": {category.id: category.type for category in categories},
       "current_category": CURRENT_CATEGORY,
@@ -255,7 +259,8 @@ def create_app(test_config=None):
   including 404 and 422. 
   '''
   @app.errorhandler(404)
-  def not_found():
+  @cross_origin()
+  def not_found(error):
     return jsonify({
       "error": 404,
       "success": False,
@@ -263,12 +268,31 @@ def create_app(test_config=None):
     }), 404
 
   @app.errorhandler(422)
-  def not_found():
+  @cross_origin()
+  def unprocessable(error):
     return jsonify({
       "error": 422,
       "success": False,
       "message": "Unprocessable Request"
-    }), 404
+      }), 422
+
+  @app.errorhandler(400)
+  @cross_origin()
+  def bad_request(error):
+    return jsonify({
+      "error": 400,
+      "success": False,
+      "message": "Bad Request"
+    }), 400
+
+  @app.errorhandler(500)
+  @cross_origin()
+  def internal_server_error(error):
+    return jsonify({
+      "error": 500,
+      "success": False,
+      "message": "Internal Server Error"
+    }), 500
   
   return app
 
